@@ -73,3 +73,30 @@ X_test = scaler.transform(X_test)
 
 import tensorflow as tf
 from tensorflow import keras
+
+
+model= keras.sequential([
+	keras.layers.Dense(12, input_shape(12,), activation = "relu"),
+	keras.layers.Dense(15,activation = "relu"),
+	keras.layers.Dense(1, activation = "sigmoid")
+])
+
+model.compile(optimizer='adam',
+	loss='binary_crossentropy'
+	metrics=['accuracy']
+)
+
+model.fit(X_train,Y_train,epochs=100)
+
+yp=model.predict(X_test)
+
+from sklearn.metrics import confusion_matrix , classification_report
+print(classification_report(y_test,yp))
+
+y_pred=[]
+for element in yp:
+	if element > 0.5:
+		y_pred.append(1)
+	else:
+		y_pred.append(0)
+print(classification_report(y_test,yp))
