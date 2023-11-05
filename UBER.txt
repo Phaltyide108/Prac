@@ -1,0 +1,112 @@
+!pip install kaggle
+from google.colab import files
+files.upload()  # This will prompt you to select the Kaggle API key file from your local machine
+!mkdir -p ~/.kaggle
+!cp kaggle.json ~/.kaggle/
+!chmod 600 ~/.kaggle/kaggle.json
+
+!unzip /content/uber-fares-dataset.zip
+
+import numpy as np
+import pandas as pd
+import math
+import matplotlib.pyplot as plt
+Data= pd.read_csv("/content/uber.csv")
+
+Data.head()
+Data.shape
+
+Data.info()
+Data.isnull().sum()
+Data.dropna(axis=0,inplace=True)
+Data.shape
+
+def haversine (lon_1, lon_2, lat_1, lat_2):
+    
+    lon_1, lon_2, lat_1, lat_2 = map(np.radians, [lon_1, lon_2, lat_1, lat_2])  #Degrees to Radians
+    
+    
+    diff_lon = lon_2 - lon_1
+    diff_lat = lat_2 - lat_1
+    
+
+    km = 2 * 6371 * np.arcsin(np.sqrt(np.sin(diff_lat/2.0)**2 + 
+                                      np.cos(lat_1) * np.cos(lat_2) * np.sin(diff_lon/2.0)**2))
+    
+    return km
+
+Data['Distance']= haversine(Data['pickup_longitude'],Data['dropoff_longitude'],
+                             Data['pickup_latitude'],Data['dropoff_latitude'])
+
+#round it to 2 decimal points
+Data['Distance'] = Data['Distance'].astype(float).round(2) 
+Data.head()
+
+plt.scatter(Data["fare_amount"], Data["Distance"])
+plt.xlabel("fare_amount")
+plt.ylabel("Distance")
+
+Data.drop(Data[Data["Distance"]>60].index, inplace= True)
+Data.drop(Data[Data["Distance"]==0].index, inplace= True)
+Data.drop(Data[Data["fare_amount"]==0].index, inplace= True)
+Data.drop(Data[Data["fare_amount"]<0].index, inplace= True)
+
+Data.head()
+
+Data2 = pd.DataFrame().assign(fare=Data["fare_amount"], Distance=Data["Distance"])
+
+plt.scatter(Data2["fare"], Data2["Distance"])
+plt.xlabel("fare")
+plt.ylabel("Distance")
+
+x=Data2["fare"].values.reshape(-1,1)
+y=Data2["Distance"].values.reshape(-1,1)
+
+from sklearn.preprocessing import StandardScaler
+std= StandardScaler()
+x=std.fit_transform(x)
+y=std.fit_transform(y)
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+
+from sklearn.linear_model import LinearRegression
+l_reg = LinearRegression()
+l_reg.fit(X_train, y_train)
+
+#predict test values
+y_pred = l_reg.predict(X_test)
+
+
+from sklearn import metrics
+print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
+print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
+print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
+
+
+plt.subplot(2, 2, 1)
+plt.scatter(X_train, y_train, color = 'red')
+plt.plot(X_train, l_reg.predict(X_train), color ="blue")
+plt.title("Fare vs Distance (Training Set)")
+plt.ylabel("fare_amount")
+plt.xlabel("Distance")
+
+plt.subplot(2, 2, 2)
+plt.scatter(X_test, y_test, color = 'red')
+plt.plot(X_train, l_reg.predict(X_train), color ="blue")
+plt.ylabel("fare_amount")
+plt.xlabel("Distance")
+plt.title("Fare vs Distance (Test Set)")
+
+
+from sklearn.ensemble import RandomForestRegressor
+# Instantiate model with 1000 decision trees
+rf = RandomForestRegressor(n_estimators = 100, random_state = 42)
+# Train the model on training data
+rf.fit(X_train, y_train);
+
+
+from sklearn import tree
+plt.figure(figsize=(15,20))
+for i in range (len(rf.estimators_)):
+  tree.plot_tree(rf.estimators_[i], filled= True)
