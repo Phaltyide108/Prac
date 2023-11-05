@@ -1,0 +1,79 @@
+import heapq
+from collections import defaultdict, Counter
+
+class HuffmanNode:
+    def __init__(self, char, freq):
+        self.char = char
+        self.freq = freq
+        self.left = None
+        self.right = None
+
+    def __lt__(self, other):
+        return self.freq < other.freq
+
+def build_huffman_tree(text):
+    # Count the frequency of each character in the text
+    freq_map = Counter(text)
+
+    # Create a priority queue of Huffman nodes
+    priority_queue = [HuffmanNode(char, freq) for char, freq in freq_map.items()]
+    heapq.heapify(priority_queue)
+
+    while len(priority_queue) > 1:
+        # Get the two nodes with the lowest frequencies
+        left = heapq.heappop(priority_queue)
+        right = heapq.heappop(priority_queue)
+
+        # Create a new node with a frequency equal to the sum of the two nodes
+        parent = HuffmanNode(None, left.freq + right.freq)
+        parent.left = left
+        parent.right = right
+
+        # Add the parent node back to the priority queue
+        heapq.heappush(priority_queue, parent)
+
+    # The remaining node is the root of the Huffman tree
+    return priority_queue[0]
+
+def build_huffman_codes(node, current_code, huffman_codes):
+    if node is None:
+        return
+
+    if node.char is not None:
+        huffman_codes[node.char] = current_code
+        return
+
+    build_huffman_codes(node.left, current_code + '0', huffman_codes)
+    build_huffman_codes(node.right, current_code + '1', huffman_codes)
+
+def huffman_encode(text):
+    root = build_huffman_tree(text)
+    huffman_codes = {}
+    build_huffman_codes(root, '', huffman_codes)
+
+    encoded_text = ''.join(huffman_codes[char] for char in text)
+    return encoded_text, huffman_codes
+
+def huffman_decode(encoded_text, huffman_codes):
+    reverse_mapping = {code: char for char, code in huffman_codes.items()}
+
+    decoded_text = ''
+    current_code = ''
+    for bit in encoded_text:
+        current_code += bit
+        if current_code in reverse_mapping:
+            char = reverse_mapping[current_code]
+            decoded_text += char
+            current_code = ''
+
+    return decoded_text
+
+if __name__ == "__main__":
+    text = "this is an example for huffman encoding"
+    encoded_text, huffman_codes = huffman_encode(text)
+
+    print("Original Text:", text)
+    print("Encoded Text:", encoded_text)
+
+    decoded_text = huffman_decode(encoded_text, huffman_codes)
+    print("Decoded Text:", decoded_text)

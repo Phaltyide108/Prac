@@ -1,0 +1,33 @@
+def fractional_knapsack(items, capacity):
+    # Sort items by their value-to-weight ratio in descending order
+    items.sort(key=lambda x: x[1] / x[0], reverse=True)
+
+    total_value = 0
+    knapsack = []
+
+    for weight, value in items:
+        if capacity == 0:
+            break
+        if weight <= capacity:
+            total_value += value
+            knapsack.append((weight, 1))
+            capacity -= weight
+        else:
+            fraction = capacity / weight
+            total_value += fraction * value
+            knapsack.append((weight, fraction))
+            capacity = 0
+
+    return total_value, knapsack
+
+if __name__ == "__main__":
+    items = [(2, 10), (3, 5), (5, 15), (7, 7), (1, 6)]
+    capacity = 15
+
+    max_value, knapsack = fractional_knapsack(items, capacity)
+
+    print("Maximum Value:", max_value)
+    print("Knapsack Contents:")
+    for item in knapsack:
+        weight, fraction = item
+        print(f"Weight: {weight}, Fraction: {fraction}")

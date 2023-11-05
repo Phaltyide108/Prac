@@ -1,0 +1,41 @@
+# Program to display the Fibonacci sequence up to n-th term
+nterms = int(input(&quot;How many terms? &quot;))
+# first two terms
+n1, n2 = 0, 1
+count = 0
+# check if the number of terms is valid
+if nterms &lt;= 0:
+print(&quot;Please enter a positive integer&quot;)
+# if there is only one term, return n1
+elif nterms == 1:
+print(&quot;Fibonacci sequence upto&quot;,nterms,&quot;:&quot;)
+print(n1)
+# generate fibonacci sequence
+
+else:
+print(&quot;Fibonacci sequence:&quot;)
+while count &lt; nterms:
+print(n1)
+nth = n1 + n2
+# update values
+n1 = n2
+n2 = nth
+count += 1
+
+
+
+
+# Python program to display the Fibonacci sequence
+def recur_fibo(n):
+if n &lt;= 1:
+return n
+else:
+return(recur_fibo(n-1) + recur_fibo(n-2))
+nterms = 7
+# check if the number of terms is valid
+if nterms &lt;= 0:
+print(&quot;Plese enter a positive integer&quot;)
+else:
+print(&quot;Fibonacci sequence:&quot;)
+for i in range(nterms):
+print(recur_fibo(i))

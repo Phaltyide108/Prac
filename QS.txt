@@ -1,0 +1,39 @@
+import random
+import time
+
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    pivot = random.choice(arr)
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+
+    return quicksort(left) + middle + quicksort(right)
+
+def randomized_quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    pivot = random.choice(arr)
+    left = [x for x in arr if x < pivot]
+    right = [x for x in arr if x > pivot]
+
+    return randomized_quicksort(left) + [pivot] + randomized_quicksort(right)
+
+# Generate a random list of numbers
+arr = random.sample(range(1, 10001), 1000)
+
+# Measure the execution time for deterministic Quick Sort
+start_time = time.time()
+sorted_arr = quicksort(arr)
+deterministic_time = time.time() - start_time
+
+# Measure the execution time for randomized Quick Sort
+start_time = time.time()
+sorted_arr = randomized_quicksort(arr)
+randomized_time = time.time() - start_time
+
+print(f"Deterministic Quick Sort took {deterministic_time:.6f} seconds")
+print(f"Randomized Quick Sort took {randomized_time:.6f} seconds")
